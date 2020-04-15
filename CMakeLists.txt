@@ -22,16 +22,21 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 #normal includes: warnings will be reported for these
 include_directories(
         ${PROJECT_SOURCE_DIR}/src
+        ${PROJECT_SOURCE_DIR}/ext/ranker
         ${source_dir}/googletest/include
         ${source_dir}/googlemock/include
 )
 
 file(GLOB_RECURSE SRC_FILES
-        ${PROJECT_SOURCE_DIR}/src/*.cpp
-        ${PROJECT_SOURCE_DIR}/src/*.h
-        )
+    ${PROJECT_SOURCE_DIR}/src/*.h
+    ${PROJECT_SOURCE_DIR}/ext/ranker/*.h
+)
 
-add_executable(${PROJECT_NAME} ${SRC_FILES})
+file(GLOB_RECURSE EXAMPLE_FILES
+        ${PROJECT_SOURCE_DIR}/examples/*.cpp
+)
+
+add_executable(example ${SRC_FILES} ${EXAMPLE_FILES})
 
 #enable_testing()
 #add_subdirectory(test)
