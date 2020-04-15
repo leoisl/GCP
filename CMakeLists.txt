@@ -27,11 +27,14 @@ include_directories(
 )
 
 file(GLOB_RECURSE SRC_FILES
-        ${PROJECT_SOURCE_DIR}/src/*.cpp
-        ${PROJECT_SOURCE_DIR}/src/*.h
-        )
+    ${PROJECT_SOURCE_DIR}/src/*.h
+)
 
-add_executable(${PROJECT_NAME} ${SRC_FILES})
+file(GLOB_RECURSE SIMPLE_GENOTYPER_FILES
+        ${PROJECT_SOURCE_DIR}/examples/simple_genotyper/*.cpp
+)
+
+add_executable(simple_genotyper ${SRC_FILES} ${SIMPLE_GENOTYPER_FILES})
 
 #enable_testing()
 #add_subdirectory(test)
