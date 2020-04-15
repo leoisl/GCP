@@ -33,6 +33,7 @@ public:
    */
   double get_confidence_percentile(double genotype_confidence) const {
     // TODO
+    return genotype_confidence;
   }
 
 
@@ -48,10 +49,10 @@ protected:
   static double round_to_two_decimal_points(double number)
   {
     char buffer[1024];
-    std::sprintf(buffer, "%.2f", number);
+    std::sprintf(buffer, "%.2lf", number);
 
     double rounded_number;
-    std::sscanf(buffer, "%f", &rounded_number);
+    std::sscanf(buffer, "%lf", &rounded_number);
 
     return rounded_number;
   }
