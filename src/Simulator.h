@@ -23,7 +23,7 @@ public:
   Simulator& operator=(Simulator&& other) = delete;
 
 
-  std::vector<double> simulate_genotype_confidences(const Genotyper* genotyper) const {
+  std::vector<double> simulate_genotype_confidences(const Genotyper* genotyper) {
     std::vector<double> genotype_confidences;
     genotype_confidences.reserve(iterations);
 
@@ -77,7 +77,7 @@ protected:
   /**
    * To be inherited and implemented by the client.
    * Destroy the simulation data to cleanup memory (e.g. delete, or free).
-   * TODO: is there a way to not need the clied to do this? Maybe use templates instead of void pointers?
+   * TODO: is there a way to not need the client to do this? Maybe use templates instead of void pointers?
    * @param data
    */
   virtual void destroy_simulation_data(void *data) const = 0;
@@ -88,7 +88,7 @@ protected:
       variance_depth = 2.0 * mean_depth;
       std::cerr << "Variance in read depth is smaller than mean read depth. "
                   "Setting variance = 2 * mean, so that variant simulations can run. "
-                  "GT_CONF_PERCENTILE may not be very useful as a result of this."
+                  "GT_CONF_PERCENTILE may not be very useful as a result of this.";
     }
   }
 
