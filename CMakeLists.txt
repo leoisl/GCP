@@ -32,11 +32,8 @@ file(GLOB_RECURSE SRC_FILES
     ${PROJECT_SOURCE_DIR}/ext/ranker/*.h
 )
 
-file(GLOB_RECURSE EXAMPLE_FILES
-        ${PROJECT_SOURCE_DIR}/examples/*.cpp
-)
-
-add_executable(example ${SRC_FILES} ${EXAMPLE_FILES})
+add_executable(ExampleGenotypeConfidencePercentiler ${SRC_FILES} ${PROJECT_SOURCE_DIR}/examples/ExampleGenotypeConfidencePercentiler.cpp)
+add_executable(FullExample ${SRC_FILES} ${PROJECT_SOURCE_DIR}/examples/FullExample.cpp)
 
 #enable_testing()
 #add_subdirectory(test)
