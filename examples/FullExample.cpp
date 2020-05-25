@@ -14,9 +14,9 @@
  * In this example, we model the kmer coverage.
  */
 struct MyModelData {
-  uint32_t correct_coverage, incorrect_coverage, total_coverage;
-  MyModelData(uint32_t correct_coverage, uint32_t incorrect_coverage, uint32_t total_coverage) :
-      correct_coverage(correct_coverage), incorrect_coverage(incorrect_coverage), total_coverage(total_coverage){}
+  uint32_t correct_coverage, incorrect_coverage;
+  MyModelData(uint32_t correct_coverage, uint32_t incorrect_coverage) :
+      correct_coverage(correct_coverage), incorrect_coverage(incorrect_coverage) {}
 };
 
 
@@ -28,9 +28,9 @@ struct MyModelData {
 class MyModel : public Model<MyModelData> {
   using Model<MyModelData>::Model;
   virtual MyModelData produce_data() override {
-    uint32_t correct_coverage = random_number_generator()%50 + 50;
-    uint32_t incorrect_coverage = random_number_generator()%10;
-    return MyModelData(correct_coverage, incorrect_coverage, correct_coverage+incorrect_coverage);
+    uint32_t correct_coverage = random_number_generator()%1000 + 1;
+    uint32_t incorrect_coverage = random_number_generator()%100;
+    return MyModelData(correct_coverage, incorrect_coverage);
   }
 };
 
@@ -100,7 +100,7 @@ int main() {
   GenotypeConfidencePercentiler genotype_confidence_percentiler(simulated_confidences);
 
   // query some genotype confidence percentiles
-  for (double confidence = 0.0; confidence <= 100.0; confidence += 10.0) {
+  for (double confidence = 0.0; confidence <= 1000.0; confidence += 100.0) {
     std::cout << "Genotype confidence: " << confidence
               << "; Percentile: " << genotype_confidence_percentiler.get_confidence_percentile(confidence)
               << std::endl;

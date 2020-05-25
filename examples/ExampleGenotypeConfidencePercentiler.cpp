@@ -8,7 +8,7 @@
  * This addresses https://github.com/leoisl/GCP/issues/6
  */
 
-int main(void) {
+int main() {
   std::vector<GenotypeConfidence> simulated_genotype_confidences =
       {0.5, 2.0, 2.5, 2.5, 5.0, 6.0, 6.0, 6.0, 8.0};
   GenotypeConfidencePercentiler genotype_confidence_percentiler(simulated_genotype_confidences);
