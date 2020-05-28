@@ -1,6 +1,6 @@
 #include <vector>
 #include <iostream>
-#include "GenotypeConfidencePercentiler.h"
+#include "Percentiler.h"
 #include "custom_types.h"
 
 /**
@@ -11,7 +11,7 @@
 int main() {
   std::vector<GenotypeConfidence> simulated_genotype_confidences =
       {0.5, 2.0, 2.5, 2.5, 5.0, 6.0, 6.0, 6.0, 8.0};
-  GenotypeConfidencePercentiler genotype_confidence_percentiler(simulated_genotype_confidences);
+  Percentiler genotype_confidence_percentiler(simulated_genotype_confidences);
 
   for (double confidence = 0.0; confidence <= 10.0; confidence += 0.5) {
     std::cout << "Genotype confidence: " << confidence

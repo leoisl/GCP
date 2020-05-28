@@ -1,14 +1,14 @@
 #include "gtest/gtest.h"
 
-#include "GenotypeConfidencePercentiler.h"
+#include "Percentiler.h"
 
 TEST(BuildPercentiler, NotEnoughData_Fails){
     std::vector<GenotypeConfidence> v{1.2};
-    EXPECT_THROW(GenotypeConfidencePercentiler p(v), NotEnoughData);
+    EXPECT_THROW(Percentiler p(v), NotEnoughData);
 }
 
 std::vector<GenotypeConfidence > ordered_v{1.1, 1.5, 5., 5., 10., 12.2, 14., 16., 20., 100.};
-GenotypeConfidencePercentiler p(ordered_v);
+Percentiler p(ordered_v);
 
 TEST(PercentileQueries, QueryBelowMin_Get0){
    auto result = p.get_confidence_percentile(1.0);
@@ -45,7 +45,7 @@ TEST(PercentileQueries, QueryMinElement_GetFirstQuantile){
 
 
 std::vector<GenotypeConfidence> unordered_v{10., 20., 4., 15.};
-GenotypeConfidencePercentiler p2(unordered_v);
+Percentiler p2(unordered_v);
 
 TEST(PercentileQueries, QueryKnownConfidenceInUnorderedEntries_CorrectPercentile){
    auto result = p2.get_confidence_percentile(10.);

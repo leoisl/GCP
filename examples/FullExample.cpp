@@ -1,5 +1,5 @@
 #include "Model.h"
-#include "GenotypeConfidencePercentiler.h"
+#include "Percentiler.h"
 #include "GenotypeConfidenceSimulator.h"
 #include "Genotyper.h"
 #include "custom_types.h"
@@ -97,7 +97,7 @@ int main() {
   std::vector<GenotypeConfidence> simulated_confidences = genotype_confidence_simulator.simulate();
 
   // create the GenotypeConfidencePercentiler
-  GenotypeConfidencePercentiler genotype_confidence_percentiler(simulated_confidences);
+  Percentiler genotype_confidence_percentiler(simulated_confidences);
 
   // query some genotype confidence percentiles
   for (double confidence = 0.0; confidence <= 1000.0; confidence += 100.0) {

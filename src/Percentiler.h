@@ -1,5 +1,5 @@
-#ifndef GCP_GENOTYPECONFIDENCEPERCENTILER_H
-#define GCP_GENOTYPECONFIDENCEPERCENTILER_H
+#ifndef GCP_PERCENTILER_H
+#define GCP_PERCENTILER_H
 
 #include <iostream>
 #include <map>
@@ -18,18 +18,18 @@ class NotEnoughData : public std::runtime_error {
  * Class responsible for assigning confidence percentiles to raw genotype confidences.
  * This class is decoupled from the others (to satisfy https://github.com/leoisl/GCP/issues/6)
  */
-class GenotypeConfidencePercentiler {
+class Percentiler {
 public:
   /**
    * Builds a GenotypeConfidencePercentiler from a vector of simulated genotype confidences
    */
-  explicit GenotypeConfidencePercentiler(const std::vector<GenotypeConfidence> &simulated_genotype_confidences) :
-          entries(simulated_genotype_confidences),
-          min_simulated_genotype_confidence(*std::min_element(simulated_genotype_confidences.begin(), simulated_genotype_confidences.end())),
-          max_simulated_genotype_confidence(*std::max_element(simulated_genotype_confidences.begin(), simulated_genotype_confidences.end())) {
+  explicit Percentiler(const std::vector<GenotypeConfidence> &input_entries) :
+          entries(input_entries),
+          min_entry(*std::min_element(input_entries.begin(), input_entries.end())),
+          max_entry(*std::max_element(input_entries.begin(), input_entries.end())) {
 
-      bool we_have_at_least_two_simulated_genotype_confidences = simulated_genotype_confidences.size() >= 2;
-      if (not we_have_at_least_two_simulated_genotype_confidences) {
+      bool enough_data = input_entries.size() >= 2;
+      if (not enough_data) {
           throw NotEnoughData("Please provide at least two simulated genotype confidences.");
       }
   }
@@ -38,11 +38,11 @@ public:
   /**
    * Get the confidence percentile given a genotype confidence.
    */
-  GenotypePercentile get_confidence_percentile(GenotypeConfidence genotype_confidence) {
-      auto lo = std::lower_bound(entries.begin(), entries.end(), genotype_confidence);
+  GenotypePercentile get_confidence_percentile(GenotypeConfidence query) {
+      auto lo = std::lower_bound(entries.begin(), entries.end(), query);
       if (lo == entries.end()) return 100.0;
-      else if (*lo == genotype_confidence){
-          auto hi = std::upper_bound(entries.begin(), entries.end(), genotype_confidence);
+      else if (*lo == query){
+          auto hi = std::upper_bound(entries.begin(), entries.end(), query);
           if (lo == hi - 1) return iterator_to_percentile(lo);
           // Case: multiple identical entries, take average
           auto distance = std::distance(lo, hi);
@@ -57,23 +57,23 @@ public:
           --lo;
           auto lo_percentile = iterator_to_percentile(lo);
           auto hi_percentile = iterator_to_percentile(hi);
-          return linear_interpolation(*hi, hi_percentile, *lo, lo_percentile, genotype_confidence);
+          return linear_interpolation(*hi, hi_percentile, *lo, lo_percentile, query);
       }
   }
 
   // destructor
-  virtual ~GenotypeConfidencePercentiler() = default;
+  virtual ~Percentiler() = default;
 
   // disabling copy and move ctor, and assignment op (always good to be extra safe in C++)
-  GenotypeConfidencePercentiler(const GenotypeConfidencePercentiler& other) = delete;
-  GenotypeConfidencePercentiler(GenotypeConfidencePercentiler&& other) = delete;
-  GenotypeConfidencePercentiler& operator=(const GenotypeConfidencePercentiler& other) = delete;
-  GenotypeConfidencePercentiler& operator=(GenotypeConfidencePercentiler&& other) = delete;
+  Percentiler(const Percentiler& other) = delete;
+  Percentiler(Percentiler&& other) = delete;
+  Percentiler& operator=(const Percentiler& other) = delete;
+  Percentiler& operator=(Percentiler&& other) = delete;
 
 private:
     const std::vector<GenotypeConfidence> &entries;
     using GC_it = std::vector<GenotypeConfidence>::const_iterator;
-    GenotypeConfidence min_simulated_genotype_confidence, max_simulated_genotype_confidence;
+    GenotypeConfidence min_entry, max_entry;
 
     std::size_t get_rank(GC_it const& it){
         return std::distance(entries.begin(), it) + 1;
@@ -95,4 +95,4 @@ private:
   }
 };
 
-#endif // GCP_GENOTYPECONFIDENCEPERCENTILER_H
+#endif //GCP_PERCENTILER_H
