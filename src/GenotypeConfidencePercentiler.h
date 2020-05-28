@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <stdexcept>
 #include "GenotypeConfidenceSimulator.h"
-#include "Genotyper.h"
 #include "ranker.h"
 #include "custom_types.h"
 

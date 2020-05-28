@@ -35,5 +35,5 @@ file(GLOB_RECURSE SRC_FILES
 add_executable(ExampleGenotypeConfidencePercentiler ${SRC_FILES} ${PROJECT_SOURCE_DIR}/examples/ExampleGenotypeConfidencePercentiler.cpp)
 add_executable(FullExample ${SRC_FILES} ${PROJECT_SOURCE_DIR}/examples/FullExample.cpp)
 
-#enable_testing()
-#add_subdirectory(test)
+enable_testing()
+add_subdirectory(tests)

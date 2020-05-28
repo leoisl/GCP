@@ -1,6 +1,9 @@
-
+# IDEs
 \.idea/
+*.swp
+*~
 
+# Build
 cmake-build-debug/
-
 cmake-build-debug-local/
+
