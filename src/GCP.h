@@ -151,6 +151,20 @@ public:
                 hi->second, query);
     }
 
+    /**
+     * Utility method: get several confidence percentiles.
+     */
+    template<typename Iterator_Type>
+    std::vector<GenotypePercentile> get_confidence_percentiles(Iterator_Type begin, Iterator_Type end) {
+        std::vector<GenotypePercentile> confidence_percentiles;
+        for(Iterator_Type it = begin; it != end; ++it) {
+          GenotypePercentile percentile = this->get_confidence_percentile(*it);
+          confidence_percentiles.push_back(percentile);
+        }
+        return confidence_percentiles;
+    }
+
+
     // destructor
     virtual ~Percentiler() = default;
 
