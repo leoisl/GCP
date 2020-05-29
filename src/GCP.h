@@ -2,6 +2,7 @@
 #define GCP_H
 
 #include <algorithm>
+#include <map>
 #include <cmath>
 #include <iostream>
 #include <vector>
@@ -107,14 +108,27 @@ public:
     /**
      * Builds a GenotypeConfidencePercentiler from a vector of simulated genotype confidences
      */
-    explicit Percentiler(const std::vector<GenotypeConfidence> &input_entries) :
-            entries(input_entries),
-            min_entry(*std::min_element(input_entries.begin(), input_entries.end())),
-            max_entry(*std::max_element(input_entries.begin(), input_entries.end())) {
+    explicit Percentiler(const std::vector<GenotypeConfidence> &input_entries) {
 
         bool enough_data = input_entries.size() >= 2;
         if (not enough_data) {
             throw NotEnoughData("Please provide at least two simulated genotype confidences.");
+        }
+
+        // Populate map of confidence -> percentile
+        auto cur_entry = input_entries.begin();
+        while (cur_entry != input_entries.end()){
+            // hi is the first entry greater than the cur_entry (or the end iterator)
+            auto hi = std::upper_bound(input_entries.begin(), input_entries.end(), *cur_entry);
+            auto cur_percentile = iterator_to_percentile(cur_entry, input_entries);
+            bool is_single_copy = cur_entry == hi - 1;
+            if (is_single_copy) entries[*cur_entry] = cur_percentile;
+            else {
+                // Case: multiple identical entries, take average
+                auto hi_percentile = iterator_to_percentile(hi - 1, input_entries);
+                entries[*cur_entry] = cur_percentile + (hi_percentile - cur_percentile) / 2;
+            }
+            cur_entry = hi;
         }
     }
 
@@ -123,24 +137,16 @@ public:
      * Get the confidence percentile given a genotype confidence.
      */
     GenotypePercentile get_confidence_percentile(GenotypeConfidence query) {
-        auto lo = std::lower_bound(entries.begin(), entries.end(), query);
-        if (lo == entries.end()) return 100.0;
-        else if (*lo == query) {
-            auto hi = std::upper_bound(entries.begin(), entries.end(), query);
-            if (lo == hi - 1) return iterator_to_percentile(lo);
-            // Case: multiple identical entries, take average
-            auto lo_percentile = iterator_to_percentile(lo);
-            auto hi_percentile = iterator_to_percentile(--hi);
-            return lo_percentile + (hi_percentile - lo_percentile) / 2;
-        } else {
-            if (lo == entries.begin()) return 0.0;
-            // Case: need to interpolate
-            auto hi = lo;
-            --lo;
-            auto lo_percentile = iterator_to_percentile(lo);
-            auto hi_percentile = iterator_to_percentile(hi);
-            return linear_interpolation(*hi, hi_percentile, *lo, lo_percentile, query);
-        }
+        auto lower_bound = entries.upper_bound(query);
+        if (lower_bound == entries.end()) return 100.0;
+        if (lower_bound->first == query) return lower_bound->second;
+        if (lower_bound == entries.begin()) return 0.0;
+
+        // Case: need to interpolate between two known confidence/percentile pairs
+        auto hi = lower_bound;
+        --lower_bound;
+        return linear_interpolation(lower_bound->first, hi->first, lower_bound->second,
+                hi->second, query);
     }
 
     // destructor
@@ -156,26 +162,18 @@ public:
     Percentiler &operator=(Percentiler &&other) = delete;
 
 private:
-    const std::vector<GenotypeConfidence> &entries;
+    std::map<GenotypeConfidence, GenotypePercentile> entries;
     using GC_it = std::vector<GenotypeConfidence>::const_iterator;
-    GenotypeConfidence min_entry, max_entry;
 
-    std::size_t get_rank(GC_it const &it) {
-        return std::distance(entries.begin(), it) + 1;
-    }
-
-    GenotypePercentile rank_to_percentile(std::size_t const rank) {
-        return 100 * rank / entries.size();
-    }
-
-    GenotypePercentile iterator_to_percentile(GC_it const &it) {
-        return rank_to_percentile(get_rank(it));
+    GenotypePercentile iterator_to_percentile(GC_it const &it,
+            std::vector<GenotypeConfidence> const& input_entries) {
+        auto rank = std::distance(input_entries.begin(), it) + 1;
+        return 100. * rank / input_entries.size();
     };
 
-
-    static double linear_interpolation(double big_x, double big_y, double small_x, double small_y, double x) {
-        // see https://en.wikipedia.org/wiki/Linear_interpolation for this formula
-        return (small_y * (big_x - x) + big_y * (x - small_x)) / (big_x - small_x);
+    static double linear_interpolation(double x1, double x2, double y1, double y2, double x) {
+        auto slope = (y2 - y1) / (x2 - x1);
+        return y1 + slope * (x - x1);
     }
 };
 

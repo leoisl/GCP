@@ -59,10 +59,10 @@ TEST(PercentileQueries, QueryElementWithManyCopies2_GetCorrectAveragedPercentile
     EXPECT_FLOAT_EQ(result, 75.);
 }
 
-std::vector<GenotypeConfidence> unordered_v{10., 20., 4., 15.};
+std::vector<GenotypeConfidence> unordered_v{10., 20., 15., 12., 4.};
 Percentiler p3(unordered_v);
 
 TEST(PercentileQueries, QueryKnownConfidenceInUnorderedEntries_CorrectPercentile){
    auto result = p3.get_confidence_percentile(10.);
-   EXPECT_FLOAT_EQ(result, 50.);
+   EXPECT_FLOAT_EQ(result, 40.);
 }

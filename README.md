@@ -6,7 +6,7 @@ Copy "GCP.h" in your project.
 
 The requirements are:
 
-1. Defining a struct or class holding data: `ModelData`.
+1. Defining a struct or class holding data: let's call it `ModelData`.
 1. Defining a genotyper class. This **must have**:
 	* A constructor taking a `ModelData` object.
 	* A method called `get_genotype_confidence`, with signature `double get_genotype_confidence()`,
