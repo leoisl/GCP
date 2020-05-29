@@ -3,6 +3,8 @@
 
 #include "GCP.h"
 
+using namespace GCP;
+
 /**
  * Define data struct/class required for genotyping to run, and
  * that will get produced by simulation.

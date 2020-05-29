@@ -2,6 +2,8 @@
 
 #include "GCP.h"
 
+using namespace GCP;
+
 TEST(BuildPercentiler, NotEnoughData_Fails){
     std::vector<GenotypeConfidence> v{1.2};
     EXPECT_THROW(Percentiler p(v), NotEnoughData);

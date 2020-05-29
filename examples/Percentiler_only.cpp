@@ -1,7 +1,9 @@
 #include <vector>
 #include <iostream>
-#include "Percentiler.h"
-#include "custom_types.h"
+
+#include "GCP.h"
+
+using namespace GCP;
 
 /**
  * This exemplify using GenotypeConfidencePercentiler without using any of the other classes/concepts;
