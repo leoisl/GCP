@@ -1,15 +1,12 @@
-#include <cmath>
 #include <iostream>
 #include <string>
 
-#include "Model.h"
-#include "GenotypeConfidenceSimulator.h"
-#include "Percentiler.h"
+#include "GCP.h"
 
 /**
  * Define data struct/class required for genotyping to run, and
  * that will get produced by simulation.
- * Assumption: pandora/gramtools define this internally.
+ * Assumption: pandora/gramtools have defined this internally.
  */
 struct MyModelData {
   uint32_t correct_coverage, incorrect_coverage;
@@ -55,7 +52,6 @@ class MyModel : public Model<MyModelData> {
 };
 
 
-
 /**
  * Usage of the library
  */
@@ -65,7 +61,7 @@ int main() {
   Model<MyModelData>* my_model = new MyModel();
 
   // simulate 10000 confidences according to our Model and our Genotyper
-  GenotypeConfidenceSimulator<MyModelData, MyGenotyper> genotype_confidence_simulator(my_model);
+  Simulator<MyModelData, MyGenotyper> genotype_confidence_simulator(my_model);
   std::vector<GenotypeConfidence> simulated_confidences = genotype_confidence_simulator.simulate(10000);
 
   // create the Percentiler

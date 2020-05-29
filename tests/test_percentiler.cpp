@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "Percentiler.h"
+#include "GCP.h"
 
 TEST(BuildPercentiler, NotEnoughData_Fails){
     std::vector<GenotypeConfidence> v{1.2};
