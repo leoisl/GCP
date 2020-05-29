@@ -44,10 +44,23 @@ TEST(PercentileQueries, QueryMinElement_GetFirstQuantile){
 }
 
 
+std::vector<GenotypeConfidence> many_duplicates{1., 1., 1., 1., 1., 10., 10., 10., 10., 15.};
+Percentiler p2(many_duplicates);
+
+TEST(PercentileQueries, QueryElementWithManyCopies_GetCorrectAveragedPercentile){
+    auto result = p2.get_confidence_percentile(1.);
+    EXPECT_FLOAT_EQ(result, 30.);
+}
+
+TEST(PercentileQueries, QueryElementWithManyCopies2_GetCorrectAveragedPercentile){
+    auto result = p2.get_confidence_percentile(10.);
+    EXPECT_FLOAT_EQ(result, 75.);
+}
+
 std::vector<GenotypeConfidence> unordered_v{10., 20., 4., 15.};
-Percentiler p2(unordered_v);
+Percentiler p3(unordered_v);
 
 TEST(PercentileQueries, QueryKnownConfidenceInUnorderedEntries_CorrectPercentile){
-   auto result = p2.get_confidence_percentile(10.);
+   auto result = p3.get_confidence_percentile(10.);
    EXPECT_FLOAT_EQ(result, 50.);
 }

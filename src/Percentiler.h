@@ -45,10 +45,9 @@ public:
           auto hi = std::upper_bound(entries.begin(), entries.end(), query);
           if (lo == hi - 1) return iterator_to_percentile(lo);
           // Case: multiple identical entries, take average
-          auto distance = std::distance(lo, hi);
           auto lo_percentile = iterator_to_percentile(lo);
           auto hi_percentile = iterator_to_percentile(--hi);
-          return (hi_percentile + lo_percentile) / distance;
+          return lo_percentile + (hi_percentile - lo_percentile) / 2;
       }
       else {
           if (lo == entries.begin()) return 0.0;
