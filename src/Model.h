@@ -4,10 +4,10 @@
 #include <random>
 
 /**
- * Class responsible for producing data according to a given Model.
- * This data will be used to produce random inputs to the Genotyper using the GenotyperInputProducer.
- * e.g. in Pandora, we model k-mer coverage with a negative binomial distribution.
- * This class allows you to model anything, not only k-mer coverage (see the produce_data() method).
+ * Class responsible for producing data.
+ * This data will be used to produce inputs to a Genotyper.
+ * The client is responsible for implementing `produce_data`;
+ * eg in Pandora, we model k-mer coverage with a negative binomial distribution.
  */
 template <typename ModelData>
 class Model {

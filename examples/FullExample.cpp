@@ -1,17 +1,15 @@
-#include "Model.h"
-#include "Percentiler.h"
-#include "GenotypeConfidenceSimulator.h"
-#include "Genotyper.h"
-#include "custom_types.h"
 #include <cmath>
 #include <iostream>
 #include <string>
 
+#include "Model.h"
+#include "GenotypeConfidenceSimulator.h"
+#include "Percentiler.h"
 
 /**
- * Defines the data produced by our custom Model (you can define whatever class/struct here).
- * Pandora will produce a set of data in its model, gramtools another set of data, etc...
- * In this example, we model the kmer coverage.
+ * Define data struct/class required for genotyping to run, and
+ * that will get produced by simulation.
+ * Assumption: pandora/gramtools define this internally.
  */
 struct MyModelData {
   uint32_t correct_coverage, incorrect_coverage;
@@ -21,60 +19,38 @@ struct MyModelData {
 
 
 /**
- * This inheritance and implementation will teach the library how to produce data from your model.
- * You can define whatever Model you want here.
- * This is a simple random Model.
+ * Assumption: pandora/gramtools have defined this internally
+ */
+class MyGenotyper{
+private:
+    double gt_conf = 0.;
+public:
+    /**
+     * This must be defined for the Simulator to use
+     */
+    MyGenotyper(MyModelData input){
+        double likelihood1 = input.correct_coverage;
+        double likelihood2 = input.incorrect_coverage;
+        likelihood1 >= likelihood2 ? gt_conf = likelihood1 - likelihood2
+                : gt_conf = likelihood2 - likelihood1;
+    }
+    /**
+     * This must be defined for the Simulator to use
+     */
+    double get_genotype_confidence() {return gt_conf;}
+};
+
+
+/**
+ * REQUIRED: Teach the library how to produce simulated data.
+ * This example samples coverage uniformly at random.
  */
 class MyModel : public Model<MyModelData> {
   using Model<MyModelData>::Model;
-  virtual MyModelData produce_data() override {
+  MyModelData produce_data() override {
     uint32_t correct_coverage = random_number_generator()%1000 + 1;
     uint32_t incorrect_coverage = random_number_generator()%100;
     return MyModelData(correct_coverage, incorrect_coverage);
-  }
-};
-
-
-/**
- * This data structure represents whatever Data Structure the C++ implementation
- * of the variant caller uses. This is the data that is given to the genotyper
- * of the variant caller to be genotyped. It is built from the model data and any other data.
- * Each variant caller represent this data in different way (Pandora's
- * data structure is different from gramtools', which is different from whatever
- * other caller.
- * In this simple example, we just have the likelihoods of two alleles.
- */
-struct MyGenotyperInput {
-  double likelihood_1, likelihood_2;
-  MyGenotyperInput(double likelihood_1, double likelihood_2) :
-     likelihood_1(likelihood_1), likelihood_2(likelihood_2) {}
-};
-
-
-/**
- * This inheritance and implementation will teach the library how to build
- * an input to the genotyper using the model data and any other data.
- * This bridges the Model to the Genotyper.
- * This is a very dummy example of a GenotyperInputProducer.
- */
-class MyGenotyperInputProducer : public GenotyperInputProducer<MyModelData, MyGenotyperInput> {
-public:
-  virtual MyGenotyperInput produce_input(const MyModelData &model_data) override {
-    return MyGenotyperInput(model_data.correct_coverage, model_data.incorrect_coverage);
-  }
-};
-
-
-/**
- * This inheritance and implementation will teach the library how to use the
- * variant caller's genotyper to get the genotype confidence.
- *
- * THIS IS REQUIRED FOR THE CLIENT TO IMPLEMENT.
- */
-class MyGenotyper : public Genotyper<MyGenotyperInput> {
-public:
-  virtual double get_genotype_confidence (const MyGenotyperInput& data) override {
-    return std::abs(data.likelihood_1 - data.likelihood_2);
   }
 };
 
@@ -87,16 +63,12 @@ int main() {
   // create the Model, the GenotyperInputProducer, and the Genotyper
   // we use polymorphism  for our library to execute the previously user defined code (thus the pointers)
   Model<MyModelData>* my_model = new MyModel();
-  GenotyperInputProducer<MyModelData, MyGenotyperInput>* my_genotyper_input_producer = new MyGenotyperInputProducer();
-  Genotyper<MyGenotyperInput>* my_genotyper = new MyGenotyper();
-
-  // create the GenotypeConfidenceSimulator
-  GenotypeConfidenceSimulator<MyModelData, MyGenotyperInput> genotype_confidence_simulator(my_model, my_genotyper_input_producer, my_genotyper);
 
   // simulate 10000 confidences according to our Model and our Genotyper
-  std::vector<GenotypeConfidence> simulated_confidences = genotype_confidence_simulator.simulate();
+  GenotypeConfidenceSimulator<MyModelData, MyGenotyper> genotype_confidence_simulator(my_model);
+  std::vector<GenotypeConfidence> simulated_confidences = genotype_confidence_simulator.simulate(10000);
 
-  // create the GenotypeConfidencePercentiler
+  // create the Percentiler
   Percentiler genotype_confidence_percentiler(simulated_confidences);
 
   // query some genotype confidence percentiles
@@ -108,8 +80,6 @@ int main() {
 
   // cleanup
   delete my_model;
-  delete my_genotyper_input_producer;
-  delete my_genotyper;
 
   return 0;
 }
