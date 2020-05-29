@@ -109,23 +109,25 @@ public:
      * Builds a GenotypeConfidencePercentiler from a vector of simulated genotype confidences
      */
     explicit Percentiler(const std::vector<GenotypeConfidence> &input_entries) {
+        std::vector<GenotypeConfidence> sorted_input_entries(input_entries);
+        std::sort(sorted_input_entries.begin(), sorted_input_entries.end());
 
-        bool enough_data = input_entries.size() >= 2;
+        bool enough_data = sorted_input_entries.size() >= 2;
         if (not enough_data) {
             throw NotEnoughData("Please provide at least two simulated genotype confidences.");
         }
 
         // Populate map of confidence -> percentile
-        auto cur_entry = input_entries.begin();
-        while (cur_entry != input_entries.end()){
+        auto cur_entry = sorted_input_entries.begin();
+        while (cur_entry != sorted_input_entries.end()){
             // hi is the first entry greater than the cur_entry (or the end iterator)
-            auto hi = std::upper_bound(input_entries.begin(), input_entries.end(), *cur_entry);
-            auto cur_percentile = iterator_to_percentile(cur_entry, input_entries);
+            auto hi = std::upper_bound(sorted_input_entries.begin(), sorted_input_entries.end(), *cur_entry);
+            auto cur_percentile = iterator_to_percentile(cur_entry, sorted_input_entries);
             bool is_single_copy = cur_entry == hi - 1;
             if (is_single_copy) entries[*cur_entry] = cur_percentile;
             else {
                 // Case: multiple identical entries, take average
-                auto hi_percentile = iterator_to_percentile(hi - 1, input_entries);
+                auto hi_percentile = iterator_to_percentile(hi - 1, sorted_input_entries);
                 entries[*cur_entry] = cur_percentile + (hi_percentile - cur_percentile) / 2;
             }
             cur_entry = hi;
