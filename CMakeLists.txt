@@ -17,8 +17,6 @@ endif ()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 
-# include(${PROJECT_SOURCE_DIR}/ext/gtest.cmake)
-
 #normal includes: warnings will be reported for these
 include_directories(
         ${PROJECT_SOURCE_DIR}/src
