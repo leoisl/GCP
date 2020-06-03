@@ -30,6 +30,21 @@ using GenotypePercentile = double;
 
 
 ////////////////////////////////////////////////////////////////////////////////
+class Utils {
+public:
+  /**
+  * Comparison of doubles are not exact, this was causing a bug.
+  * This function returns true if the doubles are close enough.
+  * I think this is fine, but might need improvements in the future.
+  * Double comparison depends on the context: https://stackoverflow.com/a/77735/5264075
+  * This function is from https://stackoverflow.com/a/15012792/5264075 , which seems a simple one that works.
+  */
+  static inline bool absolute_tolerance_compare(double x, double y);
+};
+
+
+
+////////////////////////////////////////////////////////////////////////////////
 /* ________Model________ */
 
 /**
@@ -137,6 +152,9 @@ public:
 private:
     std::map<GenotypeConfidence, GenotypePercentile> confidence_to_percentile;
 
+    inline GenotypeConfidence get_min_confidence() const;
+    inline GenotypeConfidence get_max_confidence() const;
+
     // helper methods
     static inline std::map<GenotypeConfidence, GenotypePercentile> create_confidence_to_percentile_map (const std::vector<GenotypeConfidence> &unsorted_genotype_confidences);
     static inline GenotypePercentile iterator_to_percentile(const std::vector<GenotypeConfidence>::const_iterator &it,
@@ -191,6 +209,11 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 // Implementation details
 ////////////////////////////////////////////////////////////////////////////////
+/* ________Utils________ */
+bool Utils::absolute_tolerance_compare(double x, double y)
+{
+  return std::fabs(x - y) <= std::numeric_limits<double>::epsilon() ;
+}
 
 
 /* ________Model________ */
@@ -226,34 +249,42 @@ Percentiler::Percentiler(const std::vector<GenotypeConfidence> &unsorted_genotyp
     throw NotEnoughData("Please provide at least two simulated genotype confidences.");
   }
   this->confidence_to_percentile = create_confidence_to_percentile_map(unsorted_genotype_confidences);
+}
 
+GenotypeConfidence Percentiler::get_min_confidence() const {
+  return confidence_to_percentile.begin()->first;
+}
+
+GenotypeConfidence Percentiler::get_max_confidence() const {
+  return confidence_to_percentile.rbegin()->first;
 }
 
 GenotypePercentile Percentiler::get_confidence_percentile(GenotypeConfidence queried_confidence) const {
-  auto upper_bound = confidence_to_percentile.upper_bound(queried_confidence);
-
-  bool queried_confidence_is_lower_or_equal_to_min_confidence = upper_bound == confidence_to_percentile.begin();
-  if (queried_confidence_is_lower_or_equal_to_min_confidence) {
+  bool queried_confidence_is_lower_than_min_confidence =
+      queried_confidence < get_min_confidence();
+  if (queried_confidence_is_lower_than_min_confidence) {
     return 0.0;
   }
 
-  bool queried_confidence_is_larger_than_max_confidence = upper_bound == confidence_to_percentile.end();
+  bool queried_confidence_is_larger_than_max_confidence =
+      queried_confidence > get_max_confidence();
   if (queried_confidence_is_larger_than_max_confidence) {
     return 100.0;
   }
 
-  double confidence = upper_bound->first;
-  double percentile = upper_bound->second;
-  bool queried_confidence_is_found = confidence == queried_confidence;
+  auto just_larger_or_equal_it = confidence_to_percentile.lower_bound(queried_confidence);
+  double confidence = just_larger_or_equal_it->first;
+  double percentile = just_larger_or_equal_it->second;
+  bool queried_confidence_is_found = Utils::absolute_tolerance_compare(confidence, queried_confidence);
   if (queried_confidence_is_found) {
     return percentile;
   }
 
   // interpolation has to be done now
-  auto lower_bound = upper_bound;
-  --lower_bound;
-  return linear_interpolation(upper_bound->first, lower_bound->first,
-                              upper_bound->second, lower_bound->second,
+  auto just_smaller_it = just_larger_or_equal_it;
+  --just_smaller_it;
+  return linear_interpolation(just_larger_or_equal_it->first, just_smaller_it->first,
+                              just_larger_or_equal_it->second, just_smaller_it->second,
                               queried_confidence);
 }
 
